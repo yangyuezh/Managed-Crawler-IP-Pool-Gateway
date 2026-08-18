@@ -26,6 +26,14 @@
                          NSFC、报告下载器、未来其他爬虫
 ```
 
+## 平台边界
+
+- macOS：完整支持，包括读取 Shadowrocket 订阅、Mihomo/Xray 网关、双击命令和 LaunchAgent 自动维护。
+- Linux：支持通用核心、HTTP/文件 provider、目标检测、固定端口和故障切换；不提供 Shadowrocket 与 LaunchAgent 集成。
+- Windows：当前不作为网关主机支持。Windows 上的爬虫或报告下载器可以连接部署在 macOS/Linux 上的网关，或使用另一套兼容的固定端口代理。
+
+NSFC 报告下载器支持 Windows、macOS、Linux，不等于本网关守护程序本身必须运行在三个系统上。
+
 ## 主池与备用池
 
 节点流转分为三层，统计口径不会混在一起：
