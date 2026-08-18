@@ -19,6 +19,10 @@ _SIBLING_NSFC_REPO_NAMES = (
     "NSFC-Official-Projects-Database",
     "NSFC-Official-Final-Projects",
 )
+_NSFC_DATA_RELATIVE_PATHS = (
+    Path("nsfc_project_db/official_final"),
+    Path("data"),
+)
 _NSFC_USER_AGENT_ENV = "NSFC_USER_AGENT"
 
 
@@ -28,7 +32,13 @@ def _default_nsfc_repo() -> Path:
         return Path(configured).expanduser().resolve()
 
     candidates = [_GATEWAY_ROOT]
-    candidates.extend(_GATEWAY_ROOT.parent / name for name in _SIBLING_NSFC_REPO_NAMES)
+    search_roots = (
+        _GATEWAY_ROOT.parent,
+        _GATEWAY_ROOT.parent / "github_grant_datasets",
+    )
+    candidates.extend(
+        root / name for root in search_roots for name in _SIBLING_NSFC_REPO_NAMES
+    )
     for candidate in candidates:
         if (candidate / "crawler" / "nsfc_detail_autopilot.py").is_file():
             return candidate
@@ -39,6 +49,12 @@ def _default_nsfc_data(repo: Path) -> Path:
     configured = os.environ.get("NSFC_DATA_DIR", "").strip()
     if configured:
         return Path(configured).expanduser().resolve()
+    candidates = [repo / "data"]
+    candidates.extend(_GATEWAY_ROOT.parent / path for path in _NSFC_DATA_RELATIVE_PATHS)
+    for candidate in candidates:
+        database = candidate / "final" / "nsfc_official_final_projects.sqlite"
+        if database.is_file():
+            return candidate
     return repo / "data"
 
 

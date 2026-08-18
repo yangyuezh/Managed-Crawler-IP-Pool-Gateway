@@ -3,12 +3,33 @@ from pathlib import Path
 
 import pytest
 
+from crawler_gateway.integrations import nsfc
 from crawler_gateway.integrations.nsfc import (
     existing_nsfc_processes,
     nsfc_child_environment,
     nsfc_command,
     stop_nsfc_processes,
 )
+
+
+def test_default_nsfc_paths_find_common_standalone_layout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    gateway = tmp_path / "managed_crawler_ip_pool_gateway"
+    repo = tmp_path / "github_grant_datasets" / "NSFC-Official-Projects-Database"
+    script = repo / "crawler" / "nsfc_detail_autopilot.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("", encoding="utf-8")
+    data = tmp_path / "nsfc_project_db" / "official_final"
+    database = data / "final" / "nsfc_official_final_projects.sqlite"
+    database.parent.mkdir(parents=True)
+    database.write_bytes(b"")
+    monkeypatch.delenv("NSFC_REPO", raising=False)
+    monkeypatch.delenv("NSFC_DATA_DIR", raising=False)
+    monkeypatch.setattr(nsfc, "_GATEWAY_ROOT", gateway)
+
+    assert nsfc._default_nsfc_repo() == repo
+    assert nsfc._default_nsfc_data(repo) == data
 
 
 def test_nsfc_child_environment_passes_target_user_agent_without_cli_leak(
