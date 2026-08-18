@@ -1,0 +1,4 @@
+interface:
+  display_name: "管理爬虫 IP 池网关"
+  short_description: "维护可供多个爬虫复用的固定端口多出口网关"
+  default_prompt: "使用 $manage-crawler-ip-pool-gateway 检查目标节点池、分配固定通道并报告网关状态。"

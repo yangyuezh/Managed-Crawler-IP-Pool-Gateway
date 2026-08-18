@@ -1,0 +1,23 @@
+gateway:
+  work_lanes: 3
+  work_port_base: 27891
+  probe_lanes: 2
+  probe_port_base: 27991
+  listen: 127.0.0.1
+  controller: 127.0.0.1:29090
+  inventory_concurrency: 2
+
+ip_check_urls:
+  - https://api.ipify.org?format=json
+
+providers:
+  - name: smoke
+    type: file
+    path: provider.smoke.yaml
+
+targets:
+  smoke:
+    method: GET
+    url: https://example.com/
+    expected_statuses: [200]
+    json_checks: []

@@ -1,0 +1,107 @@
+gateway:
+  backend: mihomo
+  # Keep physical direct access as the final fallback after all proxy nodes.
+  include_direct: true
+  # Use real DNS on the physical route, avoiding VPN Fake-IP answers.
+  direct_dns_servers:
+    - 1.1.1.1
+    - 8.8.8.8
+  # 3 is the conservative default. Raise toward 5 only after stable testing.
+  work_lanes: 3
+  # Safety guard, not a technical protocol limit. Raise deliberately if needed.
+  max_work_lanes: 6
+  work_port_base: 17891
+  probe_lanes: 2
+  probe_port_base: 17991
+  listen: 127.0.0.1
+  controller: 127.0.0.1:19090
+  # Keep both direct and proxy-server connections off the system VPN/TUN.
+  direct_outbound_interface: en0
+  node_outbound_interface: en0
+  settle_seconds: 1.5
+  # One total deadline shared by all public-IP checks for a node.
+  probe_timeout_seconds: 12
+  # Retry only transport failures and temporary 5xx target responses.
+  target_probe_attempts: 2
+  target_probe_retry_seconds: 1.0
+  inventory_concurrency: 2
+  healthy_max_age_hours: 24
+  failure_threshold: 3
+  monitor_interval_seconds: 30
+  reinventory_cooldown_seconds: 300
+  # Separate reserve-pool scheduler: refresh subscriptions, then probe these targets.
+  reserve_refresh_interval_seconds: 3600
+  maintenance_error_retry_seconds: 60
+  probe_history_retention_days: 90
+  # Add one or many names from the top-level targets mapping. Omit to maintain all.
+  maintenance_targets:
+    - nsfc_final_detail
+    - nsfc_final_report
+  fault_file: ~/Desktop/爬虫故障.txt
+
+ip_check_urls:
+  - https://www.cloudflare.com/cdn-cgi/trace
+  - https://api.ipify.org?format=json
+  - https://ifconfig.co/json
+
+# Both providers read the same Shadowrocket archive without modifying it.
+# Scheduling order is subscription nodes, local/manual nodes, physical direct.
+providers:
+  - name: shadowrocket_subscriptions
+    type: shadowrocket
+    path: ~/Library/Group Containers/group.com.liguangming.Shadowrocket/ServerManager
+    scope: subscription
+    # Read hidden subscription URLs from the archive and fetch them every reserve cycle.
+    refresh_remote: true
+    interval_seconds: 3600
+    include: ""
+    exclude: ""
+  - name: shadowrocket_local
+    type: shadowrocket
+    path: ~/Library/Group Containers/group.com.liguangming.Shadowrocket/ServerManager
+    scope: local
+    interval_seconds: 3600
+    include: ""
+    exclude: ""
+
+targets:
+  # Add more named website profiles beside this one. Each target keeps its own
+  # qualified reserve pool; a node may work for one website and fail another.
+  nsfc_final_detail:
+    method: POST
+    url: https://kd.nsfc.cn/api/baseQuery/conclusionProjectInfo/REPLACE_WITH_VALID_RECORD_ID
+    headers:
+      Accept: 'application/json, text/plain, */*'
+      Content-Type: application/x-www-form-urlencoded
+      Origin: https://kd.nsfc.cn
+      Referer: https://kd.nsfc.cn/finalProjectInit
+      User-Agent: Mozilla/5.0 (compatible; academic-data-maintenance)
+    form: {}
+    expected_statuses: [200]
+    json_checks:
+      - path: code
+        equals: "200"
+      - path: data.projectName
+        present: true
+      - path: data.ratifyNo
+        present: true
+  # Qualify report-download lanes separately. A node that can read project
+  # metadata is not automatically assumed to serve report pages reliably.
+  nsfc_final_report:
+    method: POST
+    url: https://kd.nsfc.cn/api/baseQuery/completeProjectReport
+    headers:
+      Accept: 'application/json, text/plain, */*'
+      Content-Type: application/x-www-form-urlencoded
+      Origin: https://kd.nsfc.cn
+      Referer: https://kd.nsfc.cn/conclusionProjectReport?id=REPLACE_WITH_VALID_RECORD_ID
+      User-Agent: Mozilla/5.0 (compatible; academic-data-maintenance)
+    form:
+      id: REPLACE_WITH_VALID_RECORD_ID
+      index: "1"
+    expected_statuses: [200]
+    json_checks:
+      - path: code
+        equals: "200"
+      - path: data.url
+        present: true
