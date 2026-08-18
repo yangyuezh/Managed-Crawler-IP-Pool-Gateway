@@ -32,7 +32,7 @@
 - Linux：支持通用核心、HTTP/文件 provider、目标检测、固定端口和故障切换；不提供 Shadowrocket 与 LaunchAgent 集成。
 - Windows：当前不作为网关主机支持。Windows 上的爬虫或报告下载器可以连接部署在 macOS/Linux 上的网关，或使用另一套兼容的固定端口代理。
 
-NSFC 报告下载器支持 Windows、macOS、Linux，不等于本网关守护程序本身必须运行在三个系统上。
+[NSFC-Final-Report-Downloader](https://github.com/yangyuezh/NSFC-Final-Report-Downloader) 支持 Windows、macOS、Linux，不等于本网关守护程序本身必须运行在三个系统上。
 
 ## 主池与备用池
 
@@ -140,7 +140,7 @@ targets:
         present: true
 ```
 
-结题报告下载使用独立的 `nsfc_final_report` 目标，不能直接沿用详情接口的历史健康状态。把配置示例中的记录 ID 换成一个确定有公开报告的项目后，依次执行：
+[NSFC-Final-Report-Downloader](https://github.com/yangyuezh/NSFC-Final-Report-Downloader) 使用独立的 `nsfc_final_report` 目标，不能直接沿用详情接口的历史健康状态。把配置示例中的记录 ID 换成一个确定有公开报告的项目后，依次执行：
 
 ```bash
 /opt/anaconda3/bin/python3 -m crawler_gateway --human --config private/gateway.yaml probe-reserve nsfc_final_report
